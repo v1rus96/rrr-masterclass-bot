@@ -131,7 +131,7 @@ bot.on("inline_query", async (query) => {
       // Define the price and currency
       const prices = [{
         label: "Donation",
-        amount: parseInt(param)
+        amount: parseInt(param) * 100
       }];
   
       // The provider token needs to be replaced with your actual CLICK Uzbekistan provider token
