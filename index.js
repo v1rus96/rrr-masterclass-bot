@@ -1,8 +1,8 @@
 const express = require("express");
 const connectDB = require("./config/db");
-const { setWebhook } = require("./config/telegram");
+const { setWebhook, bot } = require("./config/telegram");
 const logger = require("./utils/logger");  // Import the logger module
-const { bot } = require("./config/telegram"); // Import the bot instance
+require("./bot");  // Import the bot module
 
 const app = express();
 const PORT = process.env.PORT || 80;

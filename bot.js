@@ -2,7 +2,7 @@ const { bot } = require("./config/telegram");
 const { onStart, onCallbackQuery, onContact } = require("./controllers/botController");
 
 // When user starts the bot
-bot.onText(/\/start/, console.log("User started the bot"));
+bot.onText(/\/start/, onStart);
 
 // Handle the callback query (button presses)
 bot.on("callback_query", onCallbackQuery);
