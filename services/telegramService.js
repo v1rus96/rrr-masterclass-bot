@@ -4,8 +4,8 @@ const User = require("../models/User");
 const sendOnboardingMaterials = async (chatId) => {
   try {
     // Use the correct file path (ensure the files are in the correct directory)
-    const documentPath = __dirname + "/assets/Ochiq masterclass Haqida batafsil.pdf"; // Absolute path
-    const videoPath = __dirname + "/assets/a.mp4"; // Absolute path
+    const documentPath = __dirname + "/../assets/Ochiq masterclass Haqida batafsil.pdf"; // Absolute path
+    const videoPath = __dirname + "/../assets/a.mp4"; // Absolute path
 
     await bot.sendDocument(chatId, documentPath, {
       caption:
