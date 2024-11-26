@@ -1,5 +1,6 @@
 const { bot } = require("../config/telegram");
 const User = require("../models/User");
+const i18n = require("../utils/i18n"); // Import i18n for translations
 
 const sendOnboardingMaterials = async (chatId) => {
   try {
@@ -8,20 +9,17 @@ const sendOnboardingMaterials = async (chatId) => {
     const videoPath = __dirname + "/../assets/a.mp4"; // Absolute path
 
     await bot.sendDocument(chatId, documentPath, {
-      caption:
-        "🤑 Masterklass haqida ko'proq bilishni xohlaysizmi unda bu PDF siz uchun❗",
+      caption: i18n.__("masterclass_pdf_caption")
     });
 
     await bot.sendVideo(chatId, videoPath, {
-      caption: `
-💸 Siz ham shunday atomsferadan bahramand bo'lishingiz mumkin va eng kerkali bilimlarga ega bo'lasiz! 👇
-      `,
+      caption: i18n.__("masterclass_video_caption"),
       parse_mode: "Markdown",
       reply_markup: {
         inline_keyboard: [
           [
             {
-              text: "Ro'yxatdan o'tish",
+              text: i18n.__("register_masterclass"),
               callback_data: "register_masterclass",
             },
           ],
@@ -40,11 +38,11 @@ const sendOnboardingMaterials = async (chatId) => {
 const handleRegisterMasterclass = async (chatId) => {
   await bot.sendMessage(
     chatId,
-    "📱 Iltimos, Master-klassga ro'yxatdan o'tishni yakunlash uchun telefon raqamingizni baham ko'ring.",
+    i18n.__("phone_number_prompt"),
     {
       reply_markup: {
         keyboard: [
-          [{ text: "Telefon Raqamini Ulashing", request_contact: true }],
+          [{ text: i18n.__("share_phone_number_button"), request_contact: true }],
         ],
         resize_keyboard: true,
         one_time_keyboard: true,

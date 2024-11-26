@@ -1,6 +1,9 @@
 {
-    "start_message": "Welcome to the bot! Use /help for assistance.",
-    "error": "An error occurred. Please try again later.",
-    "registration_success": "Thank you for registering! Your phone number has been saved."
-  }
-  
+  "error": "⚠️ Xatolik yuz berdi. Keyinroq qayta urinib ko‘ring.",
+  "registration_success": "✅ Ro'yxatdan o'tganingiz uchun tashakkur! Sizning telefon raqamingiz saqlandi.",
+  "masterclass_pdf_caption": "🤑 Masterklass haqida ko'proq bilishni xohlaysizmi unda bu PDF siz uchun❗",
+  "masterclass_video_caption": "💸 Siz ham shunday atomsferadan bahramand bo'lishingiz mumkin va eng kerkali bilimlarga ega bo'lasiz! 👇",
+  "register_masterclass": "📝 Ro'yxatdan o'tish",
+  "phone_number_prompt": "📱 Iltimos, Master-klassga ro'yxatdan o'tishni yakunlash uchun telefon raqamingizni baham ko'ring.",
+  "share_phone_number_button": "📞 Telefon Raqamini Ulashing"
+}

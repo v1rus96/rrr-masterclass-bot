@@ -1,6 +1,9 @@
 {
-    "start_message": "Welcome to the bot! Use /help for assistance.",
-    "error": "An error occurred. Please try again later.",
-    "registration_success": "Thank you for registering! Your phone number has been saved."
-  }
-  
+  "error": "⚠️ An error occurred. Please try again later.",
+  "registration_success": "✅ Thank you for registering! Your phone number has been saved.",
+  "masterclass_pdf_caption": "🤑 Want to learn more about the masterclass? Here's the PDF for you❗",
+  "masterclass_video_caption": "💸 You can also enjoy this atmosphere and gain valuable knowledge! 👇",
+  "register_masterclass": "📝 Register",
+  "phone_number_prompt": "📱 Please share your phone number to complete the registration for the masterclass.",
+  "share_phone_number_button": "📞 Share Phone Number"
+}
