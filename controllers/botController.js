@@ -17,6 +17,7 @@ const setUserLanguage = (userLanguageCode) => {
       i18n.setLocale("en");
       break;
   }
+  console.log(`User language set to: ${i18n.getLocale()}`);
 };
 
 const onStart = async (msg) => {
@@ -51,7 +52,11 @@ const onContact = async (msg) => {
   const userId = msg.from.id;
   try {
     await handlePhoneNumberShare(msg);
-    bot.sendMessage(chatId, i18n.__("registration_success"));
+    // Check the value of i18n.__("registration_success")
+    const registrationSuccessMessage = i18n.__("registration_success");
+    console.log("Registration Success Message:", registrationSuccessMessage); // Log the message
+
+    bot.sendMessage(chatId, registrationSuccessMessage);
   } catch (error) {
     logger.error(`Error in onContact: ${error.message}`);
     bot.sendMessage(chatId, i18n.__("error"));
