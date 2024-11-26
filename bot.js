@@ -57,7 +57,7 @@ bot.on("inline_query", async (query) => {
             [
               {
                 text: i18n.__("share_phone_number_button"), // Button text for sharing phone number
-                callback_data: `call_phone_number:${user.phoneNumber}`, // Callback to initiate the phone call
+                url: `tel:+${user.phoneNumber}`, // Direct link to call the phone number
               },
             ],
           ],
@@ -79,24 +79,6 @@ bot.on("inline_query", async (query) => {
     }
   });
   
-  // Handle Callback Queries (for inline button interactions)
-  bot.on("callback_query", async (callbackQuery) => {
-    const { data, from } = callbackQuery;
-    const chatId = callbackQuery.message.chat.id;
-  
-    // Extract the action (call_phone_number) and phone number from the callback data
-    const [action, phoneNumber] = data.split(":");
-  
-    if (action === "call_phone_number") {
-      // Direct the user to call the phone number by opening the dialer
-      const phoneLink = `tel:+${phoneNumber}`; // Create a link to initiate the call
-  
-      // Send the link to the user, telling them to click to call
-      await bot.sendMessage(chatId, `${i18n.__("phone_number_prompt")} ${phoneNumber}\n\n` +
-                                    `Click [here](${phoneLink}) to dial the number.`, { parse_mode: "Markdown" });
-    }
-  });
-
 // Log any uncaught exceptions
 process.on("uncaughtException", (error) => {
   logger.error(`Uncaught Exception: ${error.message}`);
