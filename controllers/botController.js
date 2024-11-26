@@ -52,11 +52,11 @@ const onContact = async (msg) => {
   const userId = msg.from.id;
   try {
     await handlePhoneNumberShare(msg);
-    // Check the value of i18n.__("registration_success")
-    const registrationSuccessMessage = i18n.__("registration_success");
-    console.log("Registration Success Message:", registrationSuccessMessage); // Log the message
-
-    bot.sendMessage(chatId, registrationSuccessMessage);
+    await bot.sendMessage(chatId, i18n.__("registration_success"), {
+      reply_markup: {
+        remove_keyboard: true, // Remove the keyboard after phone number is shared
+      },
+    });
   } catch (error) {
     logger.error(`Error in onContact: ${error.message}`);
     bot.sendMessage(chatId, i18n.__("error"));
