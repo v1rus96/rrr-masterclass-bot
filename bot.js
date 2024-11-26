@@ -95,9 +95,6 @@ bot.on("inline_query", async (query) => {
                                     `Click [here](${phoneLink}) to dial the number.`, { parse_mode: "Markdown" });
     }
   });
-
-  const { bot } = require("./config/telegram"); // Import your bot instance
-  const i18n = require("./utils/i18n"); // Import i18n for localization
   
   // Handle /pay command to start the payment process
   bot.onText(/pay/i, function (message) {
