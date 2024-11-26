@@ -101,11 +101,11 @@ bot.on("inline_query", async (query) => {
     var iKeys = [];
     // Define the inline keyboard with amounts for the user to choose from
     iKeys.push([{
-      text: "2 €",
-      callback_data: "pay:2.00"
+      text: "10000 UZS",
+      callback_data: "pay:10000"
     },{
-      text: "10 €",
-      callback_data: "pay:10.00"
+      text: "20000 UZS",
+      callback_data: "pay:20000"
     }]);
   
     // Send the payment options as inline buttons
@@ -131,7 +131,7 @@ bot.on("inline_query", async (query) => {
       // Define the price and currency
       const prices = [{
         label: "Donation",
-        amount: parseInt(param.replace(".", "")) * 100 // Ensure we use the smallest unit (e.g., 2.00 € = 200 cents)
+        amount: parseInt(param)
       }];
   
       // The provider token needs to be replaced with your actual CLICK Uzbekistan provider token
