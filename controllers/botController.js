@@ -2,6 +2,7 @@ const i18n = require("../utils/i18n");
 const logger = require("../utils/logger");
 const { sendOnboardingMaterials, handleRegisterMasterclass } = require("../services/telegramService");
 const { handleUserStart, handlePhoneNumberShare } = require("./userController");
+const { bot } = require("../config/telegram");
 
 // Set the user's language for i18n based on their Telegram language code
 const setUserLanguage = (userLanguageCode) => {
