@@ -96,33 +96,83 @@ bot.on("inline_query", async (query) => {
     }
   });
 
-  bot.onText(/\/test_payment/, async (msg) => {
-    const chatId = msg.chat.id;
+  const { bot } = require("./config/telegram"); // Import your bot instance
+  const i18n = require("./utils/i18n"); // Import i18n for localization
   
-    // Define the invoice parameters
-    const invoice = {
-      title: "Test Payment",
-      description: "This is a test payment to verify the integration of the CLICK Uzbekistan Test payment method.",
-      payload: "test_payment_payload",
-      provider_token: "398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065", // Replace with your actual provider token
-      start_parameter: "test_payment",
-      currency: "UZS",
-      prices: [
-        {
-          label: "Test Item",
-          amount: 1000, // Amount in smallest currency unit (e.g., 1000 UZS = 10.00 UZS)
-        },
-      ],
-    };
+  // Handle /pay command to start the payment process
+  bot.onText(/pay/i, function (message) {
+    var iKeys = [];
+    // Define the inline keyboard with amounts for the user to choose from
+    iKeys.push([{
+      text: "2 €",
+      callback_data: "pay:2.00"
+    },{
+      text: "10 €",
+      callback_data: "pay:10.00"
+    }]);
   
-    try {
+    // Send the payment options as inline buttons
+    bot.sendMessage(message.chat.id, "Select an amount to pay", {
+      parse_mode: 'HTML',
+      disable_web_page_preview: true,
+      reply_markup: {
+        inline_keyboard: iKeys
+      }
+    });
+  });
+  
+  // Handle callback queries for payment
+  bot.on('callback_query', function (message) {
+    const text = message.data;
+    const func = text.split(":")[0]; // The action (pay)
+    const param = text.split(":")[1]; // The amount (e.g., 2.00)
+  
+    if (func === "pay") {
+      const player_id = message.from.id; // You can use the user ID to associate with the payment
+      const payload = player_id + Date.now() + param; // Unique payload (you can modify this for your needs)
+      
+      // Define the price and currency
+      const prices = [{
+        label: "Donation",
+        amount: parseInt(param.replace(".", "")) * 100 // Ensure we use the smallest unit (e.g., 2.00 € = 200 cents)
+      }];
+  
+      // The provider token needs to be replaced with your actual CLICK Uzbekistan provider token
+      const providerToken = "398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065"; // Replace with your provider token from CLICK Uzbekistan
+  
       // Send the invoice to the user
-      await bot.sendInvoice(chatId, invoice);
-    } catch (error) {
-      console.error("Error sending invoice:", error);
-      await bot.sendMessage(chatId, i18n.__("error"));
+      bot.sendInvoice(message.from.id, "Donation", `Donation of ${param}€`, payload, providerToken, "pay", "UZS", prices)
+        .then(() => {
+          // Optionally log or save the payment details to your database (e.g., user, amount, payload)
+          console.log(`Payment request sent for ${param}€ to user ${message.from.id}`);
+        })
+        .catch((error) => {
+          console.error("Error sending invoice:", error);
+          bot.sendMessage(message.from.id, "There was an error while processing your payment. Please try again later.");
+        });
     }
   });
+  
+  // Handle successful payment verification
+  bot.on('message', function (message) {
+    if (message.successful_payment !== undefined) {
+      const savedPayload = "yyy"; // Retrieve this from your database (the payload you saved earlier)
+      const savedStatus = "WAIT"; // Retrieve this from your database (the payment status, should be "WAIT" before payment completion)
+  
+      // Ensure the payload matches and the status is correct before processing
+      if ((savedPayload !== message.successful_payment.invoice_payload) || (savedStatus !== "WAIT")) {
+        bot.sendMessage(message.chat.id, "Payment verification failed. Please check your transaction and try again.");
+        return;
+      }
+  
+      // Payment was successful
+      bot.sendMessage(message.chat.id, `Payment of ${message.successful_payment.total_amount / 100} EUR completed successfully! Thank you!`);
+      
+      // You can update the status in the database to "COMPLETED" or similar after verifying the payment
+      // Optionally, save the transaction details (e.g., date, user ID, amount) in your database for records
+    }
+  });
+  
 
 // Log any uncaught exceptions
 process.on("uncaughtException", (error) => {
