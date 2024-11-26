@@ -138,7 +138,7 @@ bot.on("inline_query", async (query) => {
       const providerToken = "398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065"; // Replace with your provider token from CLICK Uzbekistan
   
       // Send the invoice to the user
-      bot.sendInvoice(message.from.id, "Donation", `Donation of ${param}€`, payload, providerToken, "UZS", prices)
+      bot.sendInvoice(message.from.id, "Donation", `Donation of ${param}€`, payload, providerToken, "UZS", prices, start_parameter="donation")
         .then(() => {
           // Optionally log or save the payment details to your database (e.g., user, amount, payload)
           console.log(`Payment request sent for ${param}€ to user ${message.from.id}`);
