@@ -15,7 +15,7 @@ connectDB().then(() => {
   process.exit(1); // Exit the process if DB connection fails
 });
 
-const webhookURL = `https://760b-2a05-45c2-706d-5000-2415-a9bc-7c5-f46e.ngrok-free.app/${BOT_TOKEN}`;
+const webhookURL = `https://rrr-masterclass-bot.onrender.com/${BOT_TOKEN}`;
 bot.setWebHook(webhookURL).then(() => {
   console.log(`Webhook set successfully to ${webhookURL}`);
 }).catch((error) => {
