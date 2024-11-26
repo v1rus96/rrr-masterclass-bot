@@ -50,7 +50,7 @@ bot.on("inline_query", async (query) => {
         input_message_content: {
           message_text: `${i18n.__("registration_success")}\n\n` +
                         `👤 Name: ${user.firstName} ${user.lastName}\n` +
-                        `📞 Phone: ${user.phoneNumber}`, // Show name and phone number
+                        `📞 Phone: +${user.phoneNumber}`, // Show name and phone number
         },
         reply_markup: {
           inline_keyboard: [
@@ -93,6 +93,34 @@ bot.on("inline_query", async (query) => {
       // Send the link to the user, telling them to click to call
       await bot.sendMessage(userId, `${i18n.__("phone_number_prompt")} ${phoneNumber}\n\n` +
                                     `Click [here](${phoneLink}) to dial the number.`, { parse_mode: "Markdown" });
+    }
+  });
+
+  bot.onText(/\/test_payment/, async (msg) => {
+    const chatId = msg.chat.id;
+  
+    // Define the invoice parameters
+    const invoice = {
+      title: "Test Payment",
+      description: "This is a test payment to verify the integration of the CLICK Uzbekistan Test payment method.",
+      payload: "test_payment_payload",
+      provider_token: "398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065", // Replace with your actual provider token
+      start_parameter: "test_payment",
+      currency: "UZS",
+      prices: [
+        {
+          label: "Test Item",
+          amount: 1000, // Amount in smallest currency unit (e.g., 1000 UZS = 10.00 UZS)
+        },
+      ],
+    };
+  
+    try {
+      // Send the invoice to the user
+      await bot.sendInvoice(chatId, invoice);
+    } catch (error) {
+      console.error("Error sending invoice:", error);
+      await bot.sendMessage(chatId, i18n.__("error"));
     }
   });
 
