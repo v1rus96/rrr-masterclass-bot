@@ -1,0 +1,21 @@
+{
+  "name": "bot-rrr",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "config": "^3.3.12",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "mongoose": "^8.8.0",
+    "ngrok": "^5.0.0-beta.2",
+    "node-telegram-bot-api": "^0.66.0",
+    "telegram-bot-api": "^2.0.1"
+  }
+}
