@@ -149,6 +149,46 @@ bot.on("inline_query", async (query) => {
         });
     }
   });
+
+  bot.on('pre_checkout_query', (preCheckoutQuery) => {
+    const { id, from, currency, total_amount, invoice_payload, shipping_option_id, order_info } = preCheckoutQuery;
+  
+    // Логика проверки заказа
+    const isOrderValid = true; // Здесь должна быть ваша логика проверки заказа
+  
+    if (isOrderValid) {
+      // Отправляем подтверждение
+      bot.answerPreCheckoutQuery(id, true)
+        .then(() => {
+          console.log('Заказ подтвержден');
+        })
+        .catch((error) => {
+          console.error('Ошибка при подтверждении заказа:', error);
+        });
+    } else {
+      // Отправляем ошибку с сообщением
+      const errorMessage = 'Ошибка при обработке заказа. Пожалуйста, попробуйте снова.';
+      bot.answerPreCheckoutQuery(id, false, errorMessage)
+        .then(() => {
+          console.log('Заказ отклонен');
+        })
+        .catch((error) => {
+          console.error('Ошибка при отклонении заказа:', error);
+        });
+    }
+  });
+  
+  // Обработчик успешной оплаты
+  bot.on('successful_payment', (msg) => {
+    const { chat, successful_payment } = msg;
+    const { invoice_payload, currency, total_amount } = successful_payment;
+  
+    // Логика обработки успешной оплаты
+    console.log(`Оплата успешна: ${currency} ${total_amount / 100} (${invoice_payload})`);
+  
+    // Отправляем сообщение пользователю
+    bot.sendMessage(chat.id, 'Спасибо за ваш заказ! Мы скоро свяжемся с вами.');
+  });
   
   // Handle successful payment verification
   bot.on('message', function (message) {
