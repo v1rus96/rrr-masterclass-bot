@@ -6,7 +6,6 @@ const UserSchema = new mongoose.Schema({
   firstName: { type: String },
   lastName: { type: String },
   languageCode: { type: String },
-  points: { type: Number, default: 0 },
   phoneNumber: { type: String },
   onboarding: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
