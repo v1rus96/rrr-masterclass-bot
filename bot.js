@@ -3,6 +3,7 @@ const { onStart, onCallbackQuery, onContact } = require("./controllers/botContro
 const User = require("./models/User"); // Import your User model
 const i18n = require("./utils/i18n"); // Import i18n for localization
 const logger = require("./utils/logger"); // Import logger
+const Message = require("./models/Message"); // Import the Message model
 
 // When user starts the bot
 bot.onText(/\/start/, onStart);
@@ -94,6 +95,128 @@ bot.on("inline_query", async (query) => {
       await bot.sendMessage(userId, `${i18n.__("phone_number_prompt")} ${phoneNumber}\n\n` +
                                     `Click [here](${phoneLink}) to dial the number.`, { parse_mode: "Markdown" });
     }
+  });
+
+
+  // Handle messages from the admin for drafting
+bot.on("message", async (msg) => {
+    const chatId = msg.chat.id;
+  
+    // Only allow the admin to draft broadcast messages
+    if (chatId !== ADMIN_CHAT_ID) {
+      // bot.sendMessage(
+      //   chatId,
+      //   "You are not authorized to send broadcast messages."
+      // );
+      return;
+    }
+  
+    try {
+      // Delete any existing draft message
+      await Message.deleteMany();
+  
+      // Save the new draft message
+      const newDraft = new Message({
+        text: msg.caption || msg.text || null,
+        mediaId: msg.photo
+          ? msg.photo[msg.photo.length - 1].file_id
+          : msg.video
+          ? msg.video.file_id
+          : null,
+        mediaType: msg.photo ? "photo" : msg.video ? "video" : null,
+      });
+  
+      await newDraft.save();
+  
+      // Send draft confirmation to the admin with "Broadcast" button
+      bot.sendMessage(
+        chatId,
+        "Message draft saved. Press 'Broadcast' to send it to all users.",
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [{ text: "Broadcast", callback_data: "broadcast_message" }],
+            ],
+          },
+        }
+      );
+    } catch (error) {
+      console.error("Error saving draft message:", error);
+      bot.sendMessage(
+        chatId,
+        "An error occurred while saving the draft message. Please try again."
+      );
+    }
+  });
+  
+  // Handle "Broadcast" button press to send the message to all users
+  bot.on("callback_query", async (callbackQuery) => {
+    const chatId = callbackQuery.message.chat.id;
+  
+    if (callbackQuery.data === "broadcast_message" && chatId === ADMIN_CHAT_ID) {
+      try {
+        // Retrieve the draft message
+        const draft = await Message.findOne();
+        if (!draft) {
+          bot.sendMessage(chatId, "No message draft found.");
+          return;
+        }
+  
+        // Retrieve all users from the User model
+        const users = await User.find({});
+  
+        if (users.length === 0) {
+          bot.sendMessage(chatId, "No users found to broadcast the message.");
+          return;
+        }
+  
+        // Send the draft message to each user in batches
+        const batchSize = 50;
+        const delay = 1000; // 1-second delay between batches
+        for (let i = 0; i < users.length; i += batchSize) {
+          const batch = users.slice(i, i + batchSize);
+          await Promise.all(
+            batch.map(async (user) => {
+              try {
+                if (draft.mediaType === "photo") {
+                  await bot.sendPhoto(user.userId, draft.mediaId, {
+                    caption: draft.text,
+                  });
+                } else if (draft.mediaType === "video") {
+                  await bot.sendVideo(user.userId, draft.mediaId, {
+                    caption: draft.text,
+                  });
+                } else {
+                  await bot.sendMessage(user.userId, draft.text);
+                }
+              } catch (error) {
+                if (error.response && error.response.statusCode === 403) {
+                  console.warn(`User ${user.userId} has blocked the bot.`);
+                } else {
+                  console.error(
+                    `Failed to send message to ${user.userId}:`,
+                    error.message
+                  );
+                }
+              }
+            })
+          );
+          // Delay before the next batch
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+  
+        bot.sendMessage(chatId, "Broadcast message sent to all users.");
+        await Message.deleteMany(); // Clear the draft after broadcasting
+      } catch (error) {
+        console.error("Error broadcasting message:", error);
+        bot.sendMessage(
+          chatId,
+          "An error occurred while broadcasting the message."
+        );
+      }
+    }
+  
+    bot.answerCallbackQuery(callbackQuery.id);
   });
   
   // Handle /pay command to start the payment process
