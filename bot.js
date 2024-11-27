@@ -150,6 +150,129 @@ bot.on("inline_query", async (query) => {
     }
   });
 
+  bot.on("inline_query", async (query) => {
+    const { id, query: searchText } = query;
+  
+    // Check if the query starts with "payment"
+    if (searchText.startsWith("payment")) {
+      const searchTerm = searchText.slice(8).trim(); // Extract the username or name
+  
+      // If no name/username is provided, notify the user
+      if (!searchTerm) {
+        return bot.answerInlineQuery(id, [
+          {
+            type: "article",
+            id: "no_username",
+            title: "No name/username provided",
+            input_message_content: {
+              message_text: "Please provide a name or username to send the payment request.",
+            },
+          },
+        ]);
+      }
+  
+      // Search for the user by username or name
+      const users = await User.find({
+        $or: [
+          { username: { $regex: searchTerm, $options: "i" } },
+          { firstName: { $regex: searchTerm, $options: "i" } },
+          { lastName: { $regex: searchTerm, $options: "i" } },
+        ],
+      }).limit(10); // Limit results to 10 users
+  
+      // If no user is found, notify the user
+      if (users.length === 0) {
+        return bot.answerInlineQuery(id, [
+          {
+            type: "article",
+            id: "user_not_found",
+            title: "User not found",
+            input_message_content: {
+              message_text: `No user found with the name or username "${searchTerm}".`,
+            },
+          },
+        ]);
+      }
+  
+      // Create inline query results for found users
+      const results = users.map((user) => ({
+        type: "article",
+        id: user.userId.toString(),
+        title: `Request Payment from ${user.firstName} ${user.lastName}`,
+        input_message_content: {
+          message_text: `You are about to request a payment from ${user.firstName} ${user.lastName}.`,
+        },
+        reply_markup: {
+          inline_keyboard: [
+            [
+              {
+                text: "Send Payment Request",
+                callback_data: `send_payment:${user.userId}`,
+              },
+            ],
+          ],
+        },
+      }));
+  
+      // Send the results to the inline query
+      bot.answerInlineQuery(id, results);
+    } else {
+      // Handle other queries
+      bot.answerInlineQuery(id, [
+        {
+          type: "article",
+          id: "invalid_query",
+          title: "Invalid query",
+          input_message_content: {
+            message_text: "Use the command @bot payment followed by the name or username.",
+          },
+        },
+      ]);
+    }
+  });
+  
+  // Handle the callback for sending payment request
+  bot.on("callback_query", async (callbackQuery) => {
+    const { data, from } = callbackQuery;
+    const [action, userId] = data.split(":");
+  
+    if (action === "send_payment") {
+      // Define the amount and payload for the invoice
+      const amount = 10000; // Example amount in UZS
+      const payload = `${userId}_${Date.now()}`; // Unique payload
+      const prices = [{ label: "Payment", amount: amount * 100 }]; // Amount in cents
+  
+      // Replace with your actual provider token
+      const providerToken = "398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065";
+  
+      try {
+        // Send the invoice to the user
+        await bot.sendInvoice(
+          userId,
+          "Payment Request",
+          "Please complete the payment.",
+          payload,
+          providerToken,
+          "UZS",
+          prices,
+          { start_parameter: "payment" }
+        );
+  
+        // Notify the sender that the payment request was sent
+        await bot.answerCallbackQuery(callbackQuery.id, {
+          text: "Payment request sent successfully!",
+        });
+      } catch (error) {
+        console.error("Error sending invoice:", error);
+        bot.answerCallbackQuery(callbackQuery.id, {
+          text: "Failed to send the payment request. Please try again.",
+          show_alert: true,
+        });
+      }
+    }
+  });
+  
+
   bot.on('pre_checkout_query', (preCheckoutQuery) => {
     const { id, from, currency, total_amount, invoice_payload, shipping_option_id, order_info } = preCheckoutQuery;
   
