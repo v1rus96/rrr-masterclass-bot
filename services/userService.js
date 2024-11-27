@@ -7,7 +7,7 @@ const createUserIfNotExist = async (userInfo) => {
     const { data: existingUser, error: findError } = await supabase
       .from("users")
       .select("*")
-      .eq("user_id", userInfo.id)
+      .eq("userid", userInfo.id)
       .single();
 
     if (findError && findError.code !== "PGRST116") { // Ignore "No rows found" error
@@ -49,7 +49,7 @@ const updateUserPhoneNumber = async (userId, phoneNumber) => {
     const { data: updatedUser, error: updateError } = await supabase
       .from("users")
       .update({ phone_number: phoneNumber, onboarding: true, updated_at: new Date() })
-      .eq("user_id", userId)
+      .eq("userid", userId)
       .single();
 
     if (updateError) {

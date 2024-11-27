@@ -40,7 +40,7 @@ bot.on("inline_query", async (query) => {
     const { data: users, error } = await supabase
   .from("users")
   .select("*")
-  .or(`username.ilike.%${searchTerm}%,phoneNumber.ilike.%${searchTerm}%`)
+  .or(`username.ilike.%${searchTerm}%,phonenumber.ilike.%${searchTerm}%`)
   .limit(10);// Limit results to 10 users (you can adjust this limit)
   
       // Create the results for the inline query
@@ -355,7 +355,7 @@ bot.on("callback_query", async (callbackQuery) => {
   .from("users")
   .select("*")
   .or(
-    `username.ilike.%${searchTerm}%,firstName.ilike.%${searchTerm}%,lastName.ilike.%${searchTerm}%`
+    `username.ilike.%${searchTerm}%,firstname.ilike.%${searchTerm}%,lastname.ilike.%${searchTerm}%`
   )
   .limit(10);
 // Limit results to 10 users
