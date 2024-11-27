@@ -18,15 +18,15 @@ const createUserIfNotExist = async (userInfo) => {
     if (!existingUser) {
       const { data: newUser, error: insertError } = await supabase.from("users").insert([
         {
-          user_id: userInfo.id,
+          userid: userInfo.id,
           username: userInfo.username,
-          first_name: userInfo.first_name,
-          last_name: userInfo.last_name,
-          language_code: userInfo.language_code,
+          firstname: userInfo.first_name,
+          lastname: userInfo.last_name,
+          languagecode: userInfo.language_code,
           onboarding: false,
-          phone_number: null,
-          created_at: new Date(),
-          updated_at: new Date(),
+          phonenumber: null,
+          createdat: new Date(),
+          updatedat: new Date(),
         },
       ]).single();
 
