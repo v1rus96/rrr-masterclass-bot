@@ -5,6 +5,7 @@ const i18n = require("./utils/i18n"); // Import i18n for localization
 const logger = require("./utils/logger"); // Import logger
 const Message = require("./models/Message"); // Import the Message model
 const ADMIN_CHAT_ID = 140251378; // Replace with the actual admin chat ID
+const { supabase } = require("./config/db");
 // When user starts the bot
 bot.onText(/\/start/, onStart);
 
