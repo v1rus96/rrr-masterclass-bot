@@ -119,12 +119,12 @@ bot.on("message", async (msg) => {
 const { error: saveError } = await supabase.from("messages").insert([
   {
     text: msg.caption || msg.text || null,
-    mediaId: msg.photo
+    media_id: msg.photo
       ? msg.photo[msg.photo.length - 1].file_id
       : msg.video
       ? msg.video.file_id
       : null,
-    mediaType: msg.photo ? "photo" : msg.video ? "video" : null,
+    media_type: msg.photo ? "photo" : msg.video ? "video" : null,
   },
 ]);
   
