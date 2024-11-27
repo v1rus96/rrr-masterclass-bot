@@ -118,37 +118,93 @@ bot.on("inline_query", async (query) => {
     });
   });
   
-  // Handle callback queries for payment
-  bot.on('callback_query', function (message) {
-    const text = message.data;
-    const func = text.split(":")[0]; // The action (pay)
-    const param = text.split(":")[1]; // The amount (e.g., 2.00)
+  // General callback query handler
+bot.on("callback_query", async (callbackQuery) => {
+    const { data } = callbackQuery;
+    const [action] = data.split(":");
   
-    if (func === "pay") {
-      const player_id = message.from.id; // You can use the user ID to associate with the payment
-      const payload = player_id + Date.now() + param; // Unique payload (you can modify this for your needs)
-      
-      // Define the price and currency
-      const prices = [{
-        label: "Donation",
-        amount: parseInt(param) * 100
-      }];
-  
-      // The provider token needs to be replaced with your actual CLICK Uzbekistan provider token
-      const providerToken = "398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065"; // Replace with your provider token from CLICK Uzbekistan
-  
-      // Send the invoice to the user
-      bot.sendInvoice(message.from.id, "Donation", `Donation of ${param}€`, payload, providerToken, "UZS", prices, { start_parameter: "donation" })
-        .then(() => {
-          // Optionally log or save the payment details to your database (e.g., user, amount, payload)
-          console.log(`Payment request sent for ${param}€ to user ${message.from.id}`);
-        })
-        .catch((error) => {
-          console.error("Error sending invoice:", error);
-          bot.sendMessage(message.from.id, "There was an error while processing your payment. Please try again later.");
-        });
+    // Handle "send_payment" callback
+    if (action === "send_payment") {
+      await handleSendPayment(callbackQuery);
+    } else if (action === "pay") {
+      await handlePayCallback(callbackQuery);
+    } else {
+      bot.answerCallbackQuery(callbackQuery.id, {
+        text: "Unknown action. Please try again.",
+        show_alert: true,
+      });
     }
   });
+  
+  // Function to handle "send_payment" callback
+  async function handleSendPayment(callbackQuery) {
+    const { data, from } = callbackQuery;
+    const [, userId] = data.split(":");
+  
+    // Define the amount and payload for the invoice
+    const amount = 10000; // Example amount in UZS
+    const payload = `${userId}_${Date.now()}`; // Unique payload
+    const prices = [{ label: "Payment", amount: amount * 100 }]; // Amount in cents
+  
+    // Replace with your actual provider token
+    const providerToken = "398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065";
+  
+    try {
+      // Send the invoice to the user
+      await bot.sendInvoice(
+        userId,
+        "Payment Request",
+        "Please complete the payment.",
+        payload,
+        providerToken,
+        "UZS",
+        prices,
+        { start_parameter: "payment" }
+      );
+  
+      // Notify the sender that the payment request was sent
+      await bot.answerCallbackQuery(callbackQuery.id, {
+        text: "Payment request sent successfully!",
+      });
+    } catch (error) {
+      console.error("Error sending invoice:", error);
+      bot.answerCallbackQuery(callbackQuery.id, {
+        text: "Failed to send the payment request. Please try again.",
+        show_alert: true,
+      });
+    }
+  }
+  
+  // Function to handle "pay" callback
+  async function handlePayCallback(callbackQuery) {
+    const { data, from } = callbackQuery;
+    const [, amount] = data.split(":"); // Extract amount
+    const playerId = from.id; // Get user ID
+    const payload = `${playerId}_${Date.now()}_${amount}`; // Unique payload
+    const prices = [{ label: "Donation", amount: parseInt(amount) * 100 }]; // Amount in cents
+  
+    // Replace with your actual provider token
+    const providerToken = "398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065";
+  
+    try {
+      // Send the invoice
+      await bot.sendInvoice(
+        from.id,
+        "Donation",
+        `Donation of ${amount} UZS`,
+        payload,
+        providerToken,
+        "UZS",
+        prices,
+        { start_parameter: "donation" }
+      );
+  
+      console.log(`Payment request sent for ${amount} UZS to user ${from.id}`);
+    } catch (error) {
+      console.error("Error sending invoice:", error);
+      bot.sendMessage(from.id, "There was an error processing your payment. Please try again later.");
+    }
+  }
 
   bot.on("inline_query", async (query) => {
     const { id, query: searchText } = query;
@@ -230,48 +286,7 @@ bot.on("inline_query", async (query) => {
       ]);
     }
   });
-  
-  // Handle the callback for sending payment request
-  bot.on("callback_query", async (callbackQuery) => {
-    const { data, from } = callbackQuery;
-    const [action, userId] = data.split(":");
-  
-    if (action === "send_payment") {
-      // Define the amount and payload for the invoice
-      const amount = 10000; // Example amount in UZS
-      const payload = `${userId}_${Date.now()}`; // Unique payload
-      const prices = [{ label: "Payment", amount: amount * 100 }]; // Amount in cents
-  
-      // Replace with your actual provider token
-      const providerToken = "398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065";
-  
-      try {
-        // Send the invoice to the user
-        await bot.sendInvoice(
-          userId,
-          "Payment Request",
-          "Please complete the payment.",
-          payload,
-          providerToken,
-          "UZS",
-          prices,
-          { start_parameter: "payment" }
-        );
-  
-        // Notify the sender that the payment request was sent
-        await bot.answerCallbackQuery(callbackQuery.id, {
-          text: "Payment request sent successfully!",
-        });
-      } catch (error) {
-        console.error("Error sending invoice:", error);
-        bot.answerCallbackQuery(callbackQuery.id, {
-          text: "Failed to send the payment request. Please try again.",
-          show_alert: true,
-        });
-      }
-    }
-  });
-  
+
 
   bot.on('pre_checkout_query', (preCheckoutQuery) => {
     const { id, from, currency, total_amount, invoice_payload, shipping_option_id, order_info } = preCheckoutQuery;
