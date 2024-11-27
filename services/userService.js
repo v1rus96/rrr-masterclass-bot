@@ -31,6 +31,7 @@ const createUserIfNotExist = async (userInfo) => {
       ]).single();
 
       if (insertError) {
+        console.error("Error creating user:", insertError);
         throw new Error("Error creating user");
       }
       return newUser;
