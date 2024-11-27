@@ -1,5 +1,5 @@
 const express = require("express");
-const connectDB = require("./config/db");
+const { connectDB } = require("./config/db");
 const { setWebhook, bot } = require("./config/telegram");
 const logger = require("./utils/logger");  // Import the logger module
 require("./bot");  // Import the bot module
