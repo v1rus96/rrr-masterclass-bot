@@ -46,7 +46,7 @@ bot.on("inline_query", async (query) => {
     const { data: users, error } = await supabase
       .from("users")
       .select("*")
-      .or(`username.ilike.%${searchTerm}%,phonenumber.ilike.%${searchTerm}%`)
+      .or(`username.ilike.%${searchTerm}%,phonenumber.ilike.%${searchTerm}%,firstname.ilike.%${searchTerm}%,lastname.ilike.%${searchTerm}%`)
       .limit(10); // Limit results to 10 users (you can adjust this limit)
 
     if (error) {
@@ -428,17 +428,17 @@ bot.on("inline_query", async (query) => {
     // Create inline query results for found users
     const results = users.map((user) => ({
       type: "article",
-      id: user.userId.toString(),
-      title: `Request Payment from ${user.firstName} ${user.lastName}`,
+      id: user.userid,
+      title: `Request Payment from ${user.firstname} ${user.lastname}`,
       input_message_content: {
-        message_text: `You are about to request a payment from ${user.firstName} ${user.lastName}.`,
+        message_text: `You are about to request a payment from ${user.firstname} ${user.lastname}.`,
       },
       reply_markup: {
         inline_keyboard: [
           [
             {
               text: "Send Payment Request",
-              callback_data: `send_payment:${user.userId}`,
+              callback_data: `send_payment:${user.userid}`,
             },
           ],
         ],
