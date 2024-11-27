@@ -36,12 +36,11 @@ bot.on("inline_query", async (query) => {
     }
 
     // Search for registered users based on the search text (e.g., username, phone number)
-    const users = await User.find({
-        $or: [
-          { username: { $regex: searchTerm, $options: "i" } },
-          { phoneNumber: { $regex: searchTerm, $options: "i" } }
-        ],
-      }).limit(10); // Limit results to 10 users (you can adjust this limit)
+    const { data: users, error } = await supabase
+  .from("users")
+  .select("*")
+  .or(`username.ilike.%${searchTerm}%,phoneNumber.ilike.%${searchTerm}%`)
+  .limit(10);// Limit results to 10 users (you can adjust this limit)
   
       // Create the results for the inline query
       const results = users.map((user) => ({
@@ -113,20 +112,20 @@ bot.on("message", async (msg) => {
   
     try {
       // Delete any existing draft message
-      await Message.deleteMany();
-  
-      // Save the new draft message
-      const newDraft = new Message({
-        text: msg.caption || msg.text || null,
-        mediaId: msg.photo
-          ? msg.photo[msg.photo.length - 1].file_id
-          : msg.video
-          ? msg.video.file_id
-          : null,
-        mediaType: msg.photo ? "photo" : msg.video ? "video" : null,
-      });
-  
-      await newDraft.save();
+      await supabase.from("messages").delete();
+
+// Save the new draft
+const { error: saveError } = await supabase.from("messages").insert([
+  {
+    text: msg.caption || msg.text || null,
+    mediaId: msg.photo
+      ? msg.photo[msg.photo.length - 1].file_id
+      : msg.video
+      ? msg.video.file_id
+      : null,
+    mediaType: msg.photo ? "photo" : msg.video ? "video" : null,
+  },
+]);
   
       // Send draft confirmation to the admin with "Broadcast" button
       bot.sendMessage(
@@ -156,14 +155,14 @@ bot.on("message", async (msg) => {
     if (callbackQuery.data === "broadcast_message" && chatId === ADMIN_CHAT_ID) {
       try {
         // Retrieve the draft message
-        const draft = await Message.findOne();
+        const { data: draft } = await supabase.from("messages").select("*").single();
         if (!draft) {
           bot.sendMessage(chatId, "No message draft found.");
           return;
         }
   
         // Retrieve all users from the User model
-        const users = await User.find({});
+        const { data: users, error } = await supabase.from("users").select("*");
   
         if (users.length === 0) {
           bot.sendMessage(chatId, "No users found to broadcast the message.");
@@ -351,13 +350,14 @@ bot.on("callback_query", async (callbackQuery) => {
       }
   
       // Search for the user by username or name
-      const users = await User.find({
-        $or: [
-          { username: { $regex: searchTerm, $options: "i" } },
-          { firstName: { $regex: searchTerm, $options: "i" } },
-          { lastName: { $regex: searchTerm, $options: "i" } },
-        ],
-      }).limit(10); // Limit results to 10 users
+      const { data: users, error } = await supabase
+  .from("users")
+  .select("*")
+  .or(
+    `username.ilike.%${searchTerm}%,firstName.ilike.%${searchTerm}%,lastName.ilike.%${searchTerm}%`
+  )
+  .limit(10);
+// Limit results to 10 users
   
       // If no user is found, notify the user
       if (users.length === 0) {
