@@ -49,7 +49,7 @@ const updateUserPhoneNumber = async (userId, phoneNumber) => {
   try {
     const { data: updatedUser, error: updateError } = await supabase
       .from("users")
-      .update({ phone_number: phoneNumber, onboarding: true, updated_at: new Date() })
+      .update({ phonenumber: phoneNumber, onboarding: true, updatedat: new Date() })
       .eq("userid", userId)
       .single();
 
