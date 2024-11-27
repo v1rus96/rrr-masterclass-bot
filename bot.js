@@ -81,17 +81,17 @@ bot.on("inline_query", async (query) => {
     // Map users to inline query results
     const results = users.map((user) => ({
       type: "article",
-      id: user.user_id.toString(),
-      title: `${user.first_name} ${user.last_name}`,
+      id: user.userid,
+      title: `${user.firstname} ${user.lastname}`,
       input_message_content: {
-        message_text: `👤 Name: ${user.first_name} ${user.last_name}\n📞 Phone: +${user.phone_number}`,
+        message_text: `👤 Name: ${user.firstname} ${user.lastname}\n📞 Phone: +${user.phonenumber}`,
       },
       reply_markup: {
         inline_keyboard: [
           [
             {
               text: "Share Phone Number",
-              callback_data: `call_phone_number:${user.phone_number}`,
+              callback_data: `call_phone_number:${user.phonenumber}`,
             },
           ],
         ],
