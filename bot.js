@@ -46,7 +46,9 @@ bot.on("inline_query", async (query) => {
     const { data: users, error } = await supabase
       .from("users")
       .select("*")
-      .or(`username.ilike.%${searchTerm}%,phonenumber.ilike.%${searchTerm}%,firstname.ilike.%${searchTerm}%,lastname.ilike.%${searchTerm}%`)
+      .or(
+        `username.ilike.%${searchTerm}%,phonenumber.ilike.%${searchTerm}%,firstname.ilike.%${searchTerm}%,lastname.ilike.%${searchTerm}%`
+      )
       .limit(10); // Limit results to 10 users (you can adjust this limit)
 
     if (error) {
@@ -148,7 +150,10 @@ bot.on("message", async (msg) => {
 
   try {
     // Delete any existing draft message
-    await supabase.from("messages").delete();
+    const { error } = await supabase.from("messages").delete().neq("id", null);
+    if (error) {
+      console.error("Error deleting drafts:", error.message);
+    }
 
     // Determine the media type and content
     const mediaType = msg.photo
@@ -161,14 +166,13 @@ bot.on("message", async (msg) => {
       ? "video_note"
       : null;
 
-    const mediaId =
-      msg.photo
-        ? msg.photo[msg.photo.length - 1].file_id
-        : msg.video
-        ? msg.video.file_id
-        : msg.video_note
-        ? msg.video_note.file_id
-        : null;
+    const mediaId = msg.photo
+      ? msg.photo[msg.photo.length - 1].file_id
+      : msg.video
+      ? msg.video.file_id
+      : msg.video_note
+      ? msg.video_note.file_id
+      : null;
 
     // Save the new draft
     const { error: saveError } = await supabase.from("messages").insert([
@@ -236,34 +240,34 @@ bot.on("callback_query", async (callbackQuery) => {
             try {
               switch (draft.media_type) {
                 case "photo":
-                  await bot.sendPhoto(user.userId, draft.media_id, {
+                  await bot.sendPhoto(user.userid, draft.media_id, {
                     caption: draft.text,
                   });
                   break;
                 case "video":
-                  await bot.sendVideo(user.userId, draft.media_id, {
+                  await bot.sendVideo(user.userid, draft.media_id, {
                     caption: draft.text,
                   });
                   break;
                 case "video_note":
-                  await bot.sendVideoNote(user.userId, draft.media_id);
+                  await bot.sendVideoNote(user.userid, draft.media_id);
                   break;
                 case "location":
                   await bot.sendLocation(
-                    user.userId,
+                    user.userid,
                     draft.latitude,
                     draft.longitude
                   );
                   break;
                 default:
-                  await bot.sendMessage(user.userId, draft.text);
+                  await bot.sendMessage(user.userid, draft.text);
               }
             } catch (error) {
               if (error.response && error.response.statusCode === 403) {
-                console.warn(`User ${user.userId} has blocked the bot.`);
+                console.warn(`User ${user.userid} has blocked the bot.`);
               } else {
                 console.error(
-                  `Failed to send message to ${user.userId}:`,
+                  `Failed to send message to ${user.userid}:`,
                   error.message
                 );
               }
@@ -287,7 +291,6 @@ bot.on("callback_query", async (callbackQuery) => {
 
   bot.answerCallbackQuery(callbackQuery.id);
 });
-
 
 // Handle /pay command to start the payment process
 bot.onText(/pay/i, function (message) {
