@@ -150,7 +150,7 @@ bot.on("message", async (msg) => {
 
   try {
     // Delete any existing draft message
-    const { error } = await supabase.from("messages").delete().neq("id", null);
+    const { error } = await supabase.from("messages").delete().neq("id", -1);
     if (error) {
       console.error("Error deleting drafts:", error.message);
     }
