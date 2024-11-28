@@ -8,7 +8,7 @@ const User = require("./models/User"); // Import your User model
 const i18n = require("./utils/i18n"); // Import i18n for localization
 const logger = require("./utils/logger"); // Import logger
 const Message = require("./models/Message"); // Import the Message model
-const ADMIN_CHAT_ID = 140251378; // Replace with the actual admin chat ID
+const ADMIN_CHAT_ID = 140251378 || 6055606466; // Replace with your admin chat ID
 const { supabase } = require("./config/db");
 // When user starts the bot
 bot.onText(/\/start/, onStart);
@@ -143,10 +143,6 @@ bot.on("message", async (msg) => {
 
   // Only allow the admin to draft broadcast messages
   if (chatId !== ADMIN_CHAT_ID) {
-    // bot.sendMessage(
-    //   chatId,
-    //   "You are not authorized to send broadcast messages."
-    // );
     return;
   }
 
@@ -154,16 +150,34 @@ bot.on("message", async (msg) => {
     // Delete any existing draft message
     await supabase.from("messages").delete();
 
+    // Determine the media type and content
+    const mediaType = msg.photo
+      ? "photo"
+      : msg.video
+      ? "video"
+      : msg.location
+      ? "location"
+      : msg.video_note
+      ? "video_note"
+      : null;
+
+    const mediaId =
+      msg.photo
+        ? msg.photo[msg.photo.length - 1].file_id
+        : msg.video
+        ? msg.video.file_id
+        : msg.video_note
+        ? msg.video_note.file_id
+        : null;
+
     // Save the new draft
     const { error: saveError } = await supabase.from("messages").insert([
       {
         text: msg.caption || msg.text || null,
-        media_id: msg.photo
-          ? msg.photo[msg.photo.length - 1].file_id
-          : msg.video
-          ? msg.video.file_id
-          : null,
-        media_type: msg.photo ? "photo" : msg.video ? "video" : null,
+        media_id: mediaId,
+        media_type: mediaType,
+        latitude: msg.location ? msg.location.latitude : null,
+        longitude: msg.location ? msg.location.longitude : null,
       },
     ]);
 
@@ -220,16 +234,29 @@ bot.on("callback_query", async (callbackQuery) => {
         await Promise.all(
           batch.map(async (user) => {
             try {
-              if (draft.mediaType === "photo") {
-                await bot.sendPhoto(user.userId, draft.mediaId, {
-                  caption: draft.text,
-                });
-              } else if (draft.mediaType === "video") {
-                await bot.sendVideo(user.userId, draft.mediaId, {
-                  caption: draft.text,
-                });
-              } else {
-                await bot.sendMessage(user.userId, draft.text);
+              switch (draft.media_type) {
+                case "photo":
+                  await bot.sendPhoto(user.userId, draft.media_id, {
+                    caption: draft.text,
+                  });
+                  break;
+                case "video":
+                  await bot.sendVideo(user.userId, draft.media_id, {
+                    caption: draft.text,
+                  });
+                  break;
+                case "video_note":
+                  await bot.sendVideoNote(user.userId, draft.media_id);
+                  break;
+                case "location":
+                  await bot.sendLocation(
+                    user.userId,
+                    draft.latitude,
+                    draft.longitude
+                  );
+                  break;
+                default:
+                  await bot.sendMessage(user.userId, draft.text);
               }
             } catch (error) {
               if (error.response && error.response.statusCode === 403) {
@@ -248,7 +275,7 @@ bot.on("callback_query", async (callbackQuery) => {
       }
 
       bot.sendMessage(chatId, "Broadcast message sent to all users.");
-      await Message.deleteMany(); // Clear the draft after broadcasting
+      await supabase.from("messages").delete(); // Clear the draft after broadcasting
     } catch (error) {
       console.error("Error broadcasting message:", error);
       bot.sendMessage(
@@ -260,6 +287,7 @@ bot.on("callback_query", async (callbackQuery) => {
 
   bot.answerCallbackQuery(callbackQuery.id);
 });
+
 
 // Handle /pay command to start the payment process
 bot.onText(/pay/i, function (message) {
