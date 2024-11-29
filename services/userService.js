@@ -24,6 +24,7 @@ const createUserIfNotExist = async (userInfo) => {
           lastname: userInfo.last_name,
           languagecode: userInfo.language_code,
           onboarding: false,
+          status: "invalid",
           phonenumber: null,
           createdat: new Date(),
           updatedat: new Date(),
