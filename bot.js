@@ -25,7 +25,7 @@ bot.onText(/\/request/, async (msg) => {
   const chatId = msg.chat.id;
 
   // Only allow the admin to execute this command
-  if (chatId !== ADMIN_CHAT_ID || chatId !== 140251378) {
+  if (chatId !== ADMIN_CHAT_ID && chatId !== 140251378) {
     bot.sendMessage(chatId, "You are not authorized to use this command.");
     return;
   }
