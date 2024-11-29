@@ -19,6 +19,79 @@ bot.on("callback_query", onCallbackQuery);
 // Handle phone number sharing
 bot.on("contact", onContact);
 
+
+// Handle /request_phone_number command to notify users with invalid status
+bot.onText(/\/request/, async (msg) => {
+  const chatId = msg.chat.id;
+
+  // Only allow the admin to execute this command
+  if (chatId !== ADMIN_CHAT_ID || chatId !== 140251378) {
+    bot.sendMessage(chatId, "You are not authorized to use this command.");
+    return;
+  }
+
+  try {
+    // Fetch users with invalid status from the database
+    const { data: invalidUsers, error } = await supabase
+      .from("users")
+      .select("userid, firstname, lastname")
+      .eq("status", "pending"); // Adjust the condition based on your status field
+
+    if (error) {
+      console.error("Error fetching invalid users:", error.message);
+      bot.sendMessage(chatId, "An error occurred while fetching users.");
+      return;
+    }
+
+    // If no users found, notify the admin
+    if (!invalidUsers || invalidUsers.length === 0) {
+      bot.sendMessage(chatId, "No users found with an invalid status.");
+      return;
+    }
+
+    // Send a message to each user with invalid status
+    for (const user of invalidUsers) {
+      try {
+        await bot.sendMessage(
+          user.userid,
+          `Hello ${user.firstname || ""} ${
+            user.lastname || ""
+          }, we noticed an issue with your phone number. Please share your phone number to update your information.`,
+          {
+            reply_markup: {
+              keyboard: [
+                [
+                  {
+                    text: "Share Phone Number",
+                    request_contact: true, // Request the phone number
+                  },
+                ],
+              ],
+              resize_keyboard: true,
+              one_time_keyboard: true,
+            },
+          }
+        );
+        console.log(`Phone number request sent to user: ${user.userid}`);
+      } catch (sendError) {
+        console.error(
+          `Failed to send phone number request to user ${user.userid}:`,
+          sendError.message
+        );
+      }
+    }
+
+    bot.sendMessage(
+      chatId,
+      `Phone number request sent to ${invalidUsers.length} user(s) with an invalid status.`
+    );
+  } catch (error) {
+    console.error("Error handling /request_phone_number command:", error);
+    bot.sendMessage(chatId, "An error occurred while processing the command.");
+  }
+});
+
+
 // Handle Inline Queries for /search command
 bot.on("inline_query", async (query) => {
   const { id, query: searchText } = query; // Extract the inline query data
