@@ -34,7 +34,7 @@ bot.onText(/\/request/, async (msg) => {
     const { data: invalidUsers, error } = await supabase
       .from("users")
       .select("userid, firstname, lastname")
-      .eq("status", "pending"); // Adjust the condition based on your status field
+      .eq("status", "invalid"); // Adjust the condition based on your status field
 
     if (error) {
       console.error("Error fetching invalid users:", error.message);
