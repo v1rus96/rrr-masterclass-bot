@@ -8,7 +8,7 @@ const User = require("./models/User"); // Import your User model
 const i18n = require("./utils/i18n"); // Import i18n for localization
 const logger = require("./utils/logger"); // Import logger
 const Message = require("./models/Message"); // Import the Message model
-const ADMIN_CHAT_ID = 140251378//6055606466; // Replace with your admin chat ID
+const ADMIN_CHAT_ID = 140251378; //6055606466; // Replace with your admin chat ID
 const { supabase } = require("./config/db");
 // When user starts the bot
 bot.onText(/\/start/, onStart);
@@ -18,7 +18,6 @@ bot.on("callback_query", onCallbackQuery);
 
 // Handle phone number sharing
 bot.on("contact", onContact);
-
 
 // Handle /request_phone_number command to notify users with invalid status
 bot.onText(/\/request/, async (msg) => {
@@ -54,15 +53,15 @@ bot.onText(/\/request/, async (msg) => {
       try {
         await bot.sendMessage(
           user.userid,
-          `Hello ${user.firstname || ""} ${
-            user.lastname || ""
-          }, we noticed an issue with your phone number. Please share your phone number to update your information.`,
+          `🫡Hammaga xayrli kun!
+
+💸 Sizlar bilan ko'rishishimizga ham atigi bir kun vaqt qoldi. Ko'rib turipman juda ko'pchilik ro'yxatdan o'tib allaqachon raqamlarini qoldirishgan. Lekin raqamini qoldirmagan lekin ishtirok etishni xohlaganlar juda ko'p ekan. Shunga tezda to'liq ro'yxatdan o'tishingiz so'raladi chunki joylar soni chegaralangan. Biz siz uchun joy band qilib qo'yishimiz kerak.🤝`,
           {
             reply_markup: {
               keyboard: [
                 [
                   {
-                    text: "Share Phone Number",
+                    text: "📞 Telefon Raqamini Ulashing",
                     request_contact: true, // Request the phone number
                   },
                 ],
@@ -90,7 +89,6 @@ bot.onText(/\/request/, async (msg) => {
     bot.sendMessage(chatId, "An error occurred while processing the command.");
   }
 });
-
 
 // Handle Inline Queries for /search command
 bot.on("inline_query", async (query) => {
