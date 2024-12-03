@@ -5,8 +5,8 @@ const i18n = require("../utils/i18n"); // Import i18n for translations
 const sendOnboardingMaterials = async (chatId) => {
   try {
     // Use the correct file path (ensure the files are in the correct directory)
-    const documentPath = __dirname + "/../assets/Ochiq masterclass Haqida batafsil.pdf"; // Absolute path
-    const videoPath = __dirname + "/../assets/a.mp4"; // Absolute path
+    const documentPath = __dirname + "/../assets/Yopiq masterclass Haqida batafsil.pdf"; // Absolute path
+    const videoPath = __dirname + "/../assets/b.mp4"; // Absolute path
 
     await bot.sendDocument(chatId, documentPath, {
       caption: i18n.__("masterclass_pdf_caption")
